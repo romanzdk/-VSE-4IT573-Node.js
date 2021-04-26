@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    ports:
+      - 8080:8080
+      - 8085:8085
+    volumes:
+      # - app:/code
+      - /usr/src/app
+      - /usr/src/app/node_modules
+    restart: always
+  redis:
+    image: redis:alpine
+    volumes:
+      - ./db:/data
+    entrypoint: redis-server --appendonly yes
+    restart: always
