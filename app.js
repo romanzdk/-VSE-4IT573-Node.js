@@ -5,6 +5,14 @@ import { authorized } from './myutils.mjs';
 import { createReadStream, readFileSync } from 'fs';
 import { pipeline } from 'stream';
 import { createGzip } from 'zlib';
+import { monitorEventLoopDelay } from 'perf_hooks';
+
+{
+    const perf = monitorEventLoopDelay();
+    const logPerf = () => console.log(perf);
+    perf.enable();
+    setInterval(logPerf, 10000);
+}
 
 const server = http.createServer({
     cert: readFileSync('tls/server.cert'),
