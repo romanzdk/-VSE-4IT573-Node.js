@@ -1,12 +1,15 @@
 "use strict";
-import http from 'http';
+import http from 'https';
 import WebSocket from 'ws';
 import { authorized } from './myutils.mjs';
-import { createReadStream } from 'fs';
+import { createReadStream, readFileSync } from 'fs';
 import { pipeline } from 'stream';
 import { createGzip } from 'zlib';
 
-const server = http.createServer(async(req, res) => {
+const server = http.createServer({
+    cert: readFileSync('tls/server.cert'),
+    key: readFileSync('tls/server.key')
+}, async(req, res) => {
     const user = await authorized(req, res);
     if (!user) return
     try {
@@ -33,4 +36,4 @@ wss.on('connection', async(ws, req) => {
     })
 });
 
-server.listen(8080, () => console.log('Server listening: ' + server.listening));
+server.listen(443, () => console.log('Server listening: ' + server.listening));
