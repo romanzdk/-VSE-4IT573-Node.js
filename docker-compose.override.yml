@@ -6,6 +6,7 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
+      - ./tls:/usr/src/app/tls
     ports:
       - 9229:9229
     command: npm run debug

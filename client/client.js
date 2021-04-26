@@ -1,4 +1,4 @@
-const ws = new WebSocket('ws://localhost:8080');
+const ws = new WebSocket('wss://' +location.host);
 // otevreni spojeni
 ws.addEventListener("open", () => { //jakmile se otevre
     const users = {};
@@ -19,7 +19,7 @@ ws.addEventListener("open", () => { //jakmile se otevre
     });
     ws.addEventListener("message", raw => {
         const m = JSON.parse(raw.data);
-        if (!users[m?.from]) createUser(m?.user); //? = kdyz tam from neni, vrati undefined
+        if (!users[m?.from]) createUser(m?.from); //? = kdyz tam from neni, vrati undefined
         moveCursor(m?.from, m?.x, m?.y);
 
     })
