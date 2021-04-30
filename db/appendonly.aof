@@ -728,3 +728,31 @@ $4
 salt
 $88
 lDOALa5FiPLd3wz26d+sZ884wRHSTCDrx2tX5cyc9CGK4/ovx5g1DL1M0Xem9x+Ah7yCuKDNEOakj2pZBUds7A==
+*2
+$6
+SELECT
+$1
+0
+*4
+$4
+hset
+$10
+random key
+$4
+name
+$8
+testname
+*2
+$6
+SELECT
+$1
+0
+*4
+$4
+hset
+$10
+random key
+$4
+name
+$8
+testname

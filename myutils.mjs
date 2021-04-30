@@ -2,6 +2,8 @@ import redis from 'redis';
 import { promisify } from 'util';
 import crypto from 'crypto';
 
+const delay = t => new Promise(res => setTimeout(res, t));
+
 const redisClient = redis.createClient({ host: "redis" });
 const dbHset = promisify(redisClient.hset).bind(redisClient);
 const dbHgetall = promisify(redisClient.hgetall).bind(redisClient);
@@ -48,4 +50,20 @@ const authorized = async(req, res) => {
     return user;
 }
 
-export { authorized, dbHgetall, dbHset }
+class Middleware {
+    #mws = [];
+    use(func) {
+        this.#mws.push(func);
+    }
+    go(...par) {
+        const mws = this.#mws;
+        let pointer = 0;
+
+        function next() {
+            if (pointer < mws.length) mws[pointer++](next, ...par);
+        }
+        next();
+    }
+}
+
+export { authorized, dbHgetall, dbHset, Middleware, delay }

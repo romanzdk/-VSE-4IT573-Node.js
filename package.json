@@ -12,7 +12,8 @@
     "license": "ISC",
     "dependencies": {
         "ws": "7.4.4",
-        "redis": "3.0.2"
+        "redis": "3.0.2",
+        "express": "4.17.1"
     },
     "devDependencies": {
         "mocha": "8.3.2",
