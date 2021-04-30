@@ -1,46 +1,52 @@
 "use strict";
 import http from 'https';
 import WebSocket from 'ws';
-import { authorized } from './myutils.mjs';
+import { authorized, Middleware, delay } from './myutils.mjs';
 import { createReadStream, readFileSync } from 'fs';
 import { pipeline } from 'stream';
 import { createGzip } from 'zlib';
-import { monitorEventLoopDelay } from 'perf_hooks';
+import express from 'express';
+import { setYOffset } from './businessLogic.mjs'
 
-{
-    const perf = monitorEventLoopDelay();
-    const logPerf = () => console.log(perf);
-    perf.enable();
-    setInterval(logPerf, 10000);
-}
+const app = express();
+app.use(async(req, res, next) => {
+    req.user = await authorized(req, res);
+    next()
+});
+app.use((req, res, next) => {
+    if (req.user) next()
+});
+app.use(express.static('client'));
 
 const server = http.createServer({
-    cert: readFileSync('tls/server.cert'),
-    key: readFileSync('tls/server.key')
-}, async(req, res) => {
-    const user = await authorized(req, res);
-    if (!user) return
-    try {
-        const fileStream = createReadStream('client' + (req.url == '/' ? "/index.html" : req.url))
-        res.writeHead(200, {
-            'Content-Type': 'text/html;charset=UTF-8',
-            'Content-Encoding': 'gzip'
-        });
-        const gzip = createGzip();
-        pipeline(fileStream, gzip, res, () => {});
-    } catch {
-        return res.writeHead(404).end();
-    }
-});
+        cert: readFileSync('tls/server.cert'),
+        key: readFileSync('tls/server.key')
+    },
+    app
+);
 
 const wss = new WebSocket.Server({ server });
+const mw = new Middleware;
+
+mw.use((next, mes, ws, req) => {
+    mes.from = req.user.username;
+    if (mes.from) next();
+});
+mw.use(async next => {
+    await delay(1000);
+})
+mw.use(setYOffset);
+mw.use((next, mes, ws, req, wss) => {
+    wss.clients.forEach(ws => ws.send(JSON.stringify(mes)))
+});
 
 wss.on('connection', async(ws, req) => {
-    const user = (await authorized(req)).username;
+    req.user = await authorized(req);
     ws.on('message', raw => {
         const message = JSON.parse(raw);
-        message.from = user;
-        wss.clients.forEach(ws => ws.send(JSON.stringify(message)));
+        mw.go(message, ws, req, wss);
+        // message.from = user;
+        // wss.clients.forEach(ws => ws.send(JSON.stringify(message)));
     })
 });
 
