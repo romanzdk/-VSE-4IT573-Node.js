@@ -1,1 +1,1 @@
-# nodejs_vse
+Kurz Node.JS na VSE v semestru 2020/2021
